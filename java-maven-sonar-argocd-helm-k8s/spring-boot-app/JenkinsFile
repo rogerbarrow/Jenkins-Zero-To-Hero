@@ -47,18 +47,17 @@ pipeline {
     }
     stage('Update Deployment File') {
     steps {
-        withCredentials([string(credentialsId: 'github', variable: 'GITHUB_TOKEN')]) {
+        withCredentials([string(credentialsId: 'github-token', variable: 'GITHUB_TOKEN')]) {
             sh """
                 git config user.email "rogerbarrow86@gmail.com"
                 git config user.name "rogerbarrow"
-                BUILD_NUMBER=17
+                git checkout main || git checkout -b main  # Ensure we're on the right branch
+                BUILD_NUMBER=20  # Make sure this matches the latest build
                 sed -i "s/replaceImageTag/\$BUILD_NUMBER/g" java-maven-sonar-argocd-helm-k8s/spring-boot-app-manifests/deployment.yml
                 git add java-maven-sonar-argocd-helm-k8s/spring-boot-app-manifests/deployment.yml
                 git commit -am "Update deployment image to version \$BUILD_NUMBER" || echo "No changes to commit"
-                git push origin main
+                git push https://\$GITHUB_TOKEN@github.com/rogerbarrow/Jenkins-Zero-To-Hero.git main
             """
-            }
         }
     }
-  }
 }
